@@ -1,0 +1,48 @@
+# Modbus middleware + dashboard, with an optional simulator for a no-hardware demo.
+#
+#   docker compose up --build                 # DEMO: simulator + middleware, dashboard on :8000
+#   docker compose up --build middleware      # middleware only (point it at a real PLC via env)
+#
+# Reading a real device:
+#   • RJ45 / Ethernet (Modbus TCP): set DW_HOST + DW_PORT to the PLC. On Linux, the simplest way
+#     to reach a PLC on your LAN is to uncomment `network_mode: host` (then the dashboard is on
+#     the host's :8000 and the container uses the host NIC directly).
+#   • USB / RS-485 (Modbus RTU): plug the USB-serial adapter, set DW_TRANSPORT=Rtu +
+#     DW_RTU_PORT=/dev/ttyUSB0, and uncomment the `devices:` + `group_add:` lines below.
+#     (Device passthrough works on Linux Docker; Docker Desktop on macOS/Windows cannot pass a
+#      host USB/serial port into a container — use the native ./start.sh there instead.)
+
+services:
+  simulator:
+    build: ./plc-simulator
+    command: ["--mode", "known"]      # or: ["--mode","map","--map-file","register_map.example.yaml"]
+    ports:
+      - "5020:5020"
+    restart: unless-stopped
+
+  middleware:
+    build: ./middleware
+    ports:
+      - "8000:8000"
+    environment:
+      DW_MODE: ${DW_MODE:-scan}                 # scan | discover
+      DW_TRANSPORT: ${DW_TRANSPORT:-Tcp}        # Tcp | Rtu
+      DW_HOST: ${DW_HOST:-simulator}            # PLC IP for real TCP; 'simulator' for the demo
+      DW_PORT: ${DW_PORT:-5020}                 # 502 for a typical real PLC
+      DW_UNIT: ${DW_UNIT:-1}
+      DW_ALLOW_WRITES: ${DW_ALLOW_WRITES:-false}
+      # RTU only:
+      DW_RTU_PORT: ${DW_RTU_PORT:-/dev/ttyUSB0}
+      DW_BAUD: ${DW_BAUD:-9600}
+    volumes:
+      - ./data/logs:/app/logs                   # persist change CSVs + discovery reports
+    restart: unless-stopped
+
+    # --- USB / RS-485 (Modbus RTU), Linux hosts only — uncomment and set your device: ---
+    # devices:
+    #   - "/dev/ttyUSB0:/dev/ttyUSB0"
+    # group_add:
+    #   - "dialout"
+
+    # --- Real PLC on the LAN over RJ45 (Modbus TCP), Linux hosts — simplest reachability: ---
+    # network_mode: "host"     # NOTE: with host networking, drop the `ports:` block above.

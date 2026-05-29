@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driftwatch</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Driftwatch</h1>
+    <div class="status">
+      <span id="conn" class="pill pill-unknown">connection: …</span>
+      <span id="writes" class="pill pill-unknown">writes: …</span>
+      <span id="transport" class="pill">transport: …</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="grid-panel">
+      <h2>Live values <small id="grid-count"></small></h2>
+      <div class="table-wrap">
+        <table id="grid">
+          <thead>
+            <tr><th>Modicon</th><th>Type</th><th>Addr</th><th>Label</th><th>Value</th><th>Age</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" id="write-panel">
+        <h2>Write</h2>
+        <div id="write-banner" class="banner banner-unknown">checking write status…</div>
+        <form id="write-form">
+          <label>Type
+            <select name="objectType">
+              <option value="HoldingRegister">HoldingRegister (4xxxx)</option>
+              <option value="Coil">Coil (0xxxx)</option>
+            </select>
+          </label>
+          <label>Unit <input name="unitId" type="number" value="1" min="0" max="247" /></label>
+          <label>Address <input name="address" type="number" value="100" min="0" max="65535" /></label>
+          <label>Value <input name="value" type="number" value="0" min="0" max="65535" /></label>
+          <label class="confirm"><input name="confirm" type="checkbox" /> I confirm this write hits real hardware</label>
+          <button type="submit" id="write-btn">Send write</button>
+        </form>
+        <div id="write-result" class="result"></div>
+      </section>
+
+      <section class="panel" id="history-panel">
+        <h2>Change history <small>(latest 200)</small></h2>
+        <ul id="history"></ul>
+      </section>
+    </aside>
+
+    <section class="panel" id="discovery-panel">
+      <h2>Discovery report <button id="discovery-refresh" type="button">refresh</button></h2>
+      <div id="discovery"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

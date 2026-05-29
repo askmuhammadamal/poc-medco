@@ -1,0 +1,32 @@
+[project]
+name = "driftwatch"
+version = "1.0.0"
+description = "Production-grade Modbus client middleware (scan + discover) with a live web dashboard. Python port of the .NET data-logger."
+requires-python = ">=3.9"
+dependencies = [
+    "pymodbus==3.7.4",
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.34,<1.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+]
+
+[project.scripts]
+driftwatch = "driftwatch.__main__:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["driftwatch*"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

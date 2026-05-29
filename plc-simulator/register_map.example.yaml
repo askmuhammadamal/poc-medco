@@ -1,0 +1,34 @@
+# Example vendor-style register map. Use with: --mode map --map-file register_map.example.yaml
+#
+# Each section is one Modbus object type. Addresses are zero-based protocol addresses
+# (i.e. holding register 100 = Modicon 40101, NOT 40100). See README for the convention.
+#
+# Address ranges may be sparse — unallocated addresses respond with ILLEGAL_DATA_ADDRESS,
+# which exercises the middleware's dead-address tracker.
+
+unit_id: 1
+
+holding_registers:
+  100: { type: uint16, value: 1234, description: "Static device ID" }
+  101: { type: uint16, mode: heartbeat, description: "Increments every 1s, wraps 16-bit" }
+  102: { type: uint16, mode: random, min: 200, max: 350, description: "Temperature x10 degC" }
+  # 32-bit float across 200-201, CDAB word order (common Schneider/Siemens convention).
+  200: { type: float32, value: 3.14159, word_order: CDAB, description: "Pressure (bar)" }
+  # 32-bit signed int across 210-211, ABCD order.
+  210: { type: int32, value: -1000000, word_order: ABCD, description: "Cumulative count" }
+  # ASCII string spanning 220-227 (8 regs = 16 chars), big-endian byte order.
+  220: { type: string, value: "PLC-SIM-V2", length: 16, description: "Device tag" }
+
+input_registers:
+  0:   { type: uint16, value: 50, description: "Read-only sensor: humidity %" }
+  10:  { type: uint16, mode: random, min: 0, max: 100, description: "Vibration index" }
+
+coils:
+  0:  true
+  1:  false
+  10: true
+
+discrete_inputs:
+  0:  true   # E-stop OK
+  1:  false  # Motor running
+  20: true   # Door closed

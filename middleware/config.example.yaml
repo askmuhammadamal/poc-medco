@@ -1,0 +1,45 @@
+# Example configuration. Copy to config.yaml and pass --config config.yaml, or rely on the
+# built-in defaults (which already define the four demo ranges + console/CSV sinks).
+mode: Scan            # Scan | Discover
+
+modbus:
+  transport: Tcp      # Tcp | Rtu
+  unit_id: 1
+  tcp:
+    host: 127.0.0.1
+    port: 5020        # the simulator; real PLCs usually use 502
+    connect_timeout_ms: 5000
+    read_timeout_ms: 3000
+  rtu:
+    port_name: /dev/ttyUSB0   # COMx on Windows
+    baud_rate: 9600
+    parity: N
+  resilience:
+    initial_backoff_ms: 500
+    max_backoff_ms: 30000
+    backoff_multiplier: 2.0
+    jitter: true
+    max_attempts: -1   # -1 = infinite
+  safety:
+    allow_writes: false  # writes blocked until explicitly enabled
+
+scanner:
+  ranges:
+    - {object_type: HoldingRegister, start: 100, count: 100, poll_ms: 500,  unit_id: 1, label: HR-100}
+    - {object_type: InputRegister,   start: 0,   count: 16,  poll_ms: 1000, unit_id: 1, label: IR-bank}
+    - {object_type: Coil,            start: 0,   count: 16,  poll_ms: 1000, unit_id: 1, label: Coils-low}
+    - {object_type: DiscreteInput,   start: 0,   count: 32,  poll_ms: 1000, unit_id: 1, label: DI-bank}
+
+discovery:
+  object_types: [HoldingRegister, InputRegister, Coil, DiscreteInput]
+  address_range: {start: 0, end: 500}
+  slave_ids: [1]
+  scan_slaves: false
+  scan_slaves_max: 32
+  batch_size: 50
+  pause_ms: 20
+  report_path: logs/discovery.jsonl
+
+sinks:
+  console: {enabled: true}
+  csv: {enabled: true, directory: logs, file_prefix: changes, rotate_daily: true, flush_every: 1}
